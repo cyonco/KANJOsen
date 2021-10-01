@@ -1,0 +1,71 @@
+package kosen.kosen.com;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+ 
+@WebServlet("/SampleServlet")
+public class Server extends HttpServlet {
+	private static final long serialVersionUID = 1L;
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+
+
+	    // 変数の準備
+	        Connection con = null;
+	        PreparedStatement stmt = null;
+	        ResultSet rs = null;
+
+	    // SQL文の作成
+	        String sql = "SELECT * FROM <カラム名>";
+	        
+	        response.setContentType("text/html; charset=Windows-31J");
+	        PrintWriter out = response.getWriter();
+	        out.println("<html><head></head><body>");
+	        out.println("<table border=’true’>");
+	        out.println("<tr><th>id</th><th>temper</th><th>heart</th>"
+	        +"<th>time</th></tr>");
+
+	        try {
+	            // JDBCドライバのロード
+	            Class.forName("com.mysql.cj.jdbc.Driver");
+	            // データベース接続
+	            con = DriverManager.getConnection("jdbc:mysql://<URL>", "<USER名>", "<パスワード>");
+	            // SQL実行準備
+	            stmt = con.prepareStatement(sql);
+	            // 実行結果取得
+	            rs = stmt.executeQuery();
+
+	      // データがなくなるまで(rs.next()がfalseになるまで)繰り返す
+	            while (rs.next()) {
+	            	out.print("<tr>");
+	            	out.print("<td>"+rs.getString("<項目>")+"</td>");// コピー用
+	            	out.print("</tr>");
+	            }
+	        } catch (ClassNotFoundException e) {
+	            System.out.println("JDBCドライバのロードでエラーが発生しました");
+	        } catch (SQLException e) {
+	            System.out.println("データベースへのアクセスでエラーが発生。");
+	        } finally {
+	            try {
+	                if (con != null) {
+	                    con.close();
+	                }
+	            } catch (SQLException e) {
+	                System.out.println("データベースへのアクセスでエラーが発生しました。");
+	            }
+	        }
+	        out.println("</table>");
+	        out.println("</body></html>");
+	        out.close();
+	}
+}
